@@ -19,20 +19,28 @@ def rename_files(path):
 def process_file(input_path, output_path):
     for filename in os.listdir(input_path):
         if filename.endswith('.lrc'):
-            with open(os.path.join(input_path, filename), encoding='GB18030') as fin, \
-                    open(os.path.join(output_path, filename[:-4] + '.txt'), 'w') as fout:
-                for line in fin:
-                    line = re.sub(r'^.{10}', '', line).strip()
-                    line = re.sub(r'<ch>.*', '', line)
-                    if re.match(r'(Section|Conversation|Passage|Recording)', line):
-                        fout.write('\n\n' + line + '\n')
-                    elif re.match(r'(M:|W:)', line):
-                        fout.write('\n' + line)
-                    elif re.match(r'(College English Test Band Six|Directions)', line):
-                        fout.write(line)
-                    else:
-                        prefix = '' if line.startswith(' ') else ' '
-                        fout.write(prefix + line)
+            with open(os.path.join(input_path, filename), encoding='GB18030') as fin:
+                with open(os.path.join(output_path, f'{filename[:-4]}.txt'), 'w') as fout:
+                    flag = False
+                    follow = False
+                    for line in fin:
+                        if len(line) < 10:
+                            continue
+
+                        line = re.sub(r'^.{10}', '', line).strip()
+                        line = re.sub(r'<ch>.*', '', line).strip()
+
+                        if re.match(r'(Questions)', line):
+                            fout.write('\n\n' + line + ' ')
+                        elif re.match(r'(Section|Conversation|Passage|Recording|Questions)', line):
+                            fout.write('\n\n' + line + '\n')
+                        elif re.match(r'(M:|W:)', line):
+                            fout.write('\n' + line + ' ')
+                        elif re.match(r'(College English Test)', line):
+                            fout.write(line + '\n')
+                        else:
+                            fout.write(f'{line} ')
+                        print(f'\'{line}\'')
 
 
 for path in ['./input/lrc', './input/mp3']:
